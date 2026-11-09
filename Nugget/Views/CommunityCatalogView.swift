@@ -105,7 +105,9 @@ struct CommunityCatalogView: View {
         .searchable(text: $search)
         .toolbar { Button { Task { await refresh() } } label: { Image(systemName: "arrow.clockwise") }.disabled(loading) }
         .task { if entries.isEmpty { await refresh() } }
-        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.data, .zip, .json, .image]) { result in
+        // File Providers do not consistently identify the custom .batter
+        // extension as .data. The import parser validates supported formats.
+        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.item]) { result in
             do { try importFile(result.get()) } catch { message = error.localizedDescription }
         }
         .sheet(isPresented: $showCode) {

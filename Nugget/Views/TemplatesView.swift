@@ -36,14 +36,11 @@ struct TemplatesView: View {
     @State private var showImporter = false
     @State private var pickError: String?
 
-    /// The file picker for a `replace` option, and which option asked for it.
+    /// The replacement option which requested the shared file picker.
     ///
-    /// One picker for the whole page rather than one per option, because two
-    /// `fileImporter` modifiers on the same view shadow each other on iOS 26 —
-    /// the same reason `PosterBoardView` keeps each picker attached to the
-    /// control that presents it.
+    /// A single `fileImporter` handles both template imports and replacements.
+    /// Attaching two importers to the same view can shadow one on iOS 26+.
     @State private var replaceTarget: (template: Int, option: Int)?
-    @State private var showReplaceImporter = false
 
     var body: some View {
         List {
@@ -69,12 +66,16 @@ struct TemplatesView: View {
             // gates are re-checked: the page is the only place that knows both.
             selection.loadFromDisk(deviceVersion: identity.version)
         }
-        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.data]) { result in
-            importTemplate(result)
-        }
-        .fileImporter(isPresented: $showReplaceImporter,
-                      allowedContentTypes: replaceContentTypes) { result in
-            chooseReplacement(result)
+        .fileImporter(isPresented: $showImporter,
+                      allowedContentTypes: replaceTarget == nil ? [.item] : replaceContentTypes) { result in
+            // .data alone greys out .batter files for File Providers that have
+            // not assigned the custom extension a data-conforming type.
+            // Importing .item is safe: TemplateFile validates the ZIP/config.
+            if replaceTarget == nil {
+                importTemplate(result)
+            } else {
+                chooseReplacement(result)
+            }
         }
     }
 
@@ -89,6 +90,7 @@ struct TemplatesView: View {
     private var importSection: some View {
         Section {
             Button {
+                replaceTarget = nil
                 showImporter = true
             } label: {
                 Label("Import .batter template", systemImage: "plus.circle")
@@ -227,7 +229,7 @@ struct TemplatesView: View {
                     HStack {
                         Button {
                             replaceTarget = (templateIndex, optionIndex)
-                            showReplaceImporter = true
+                            showImporter = true
                         } label: {
                             Label(value.value == nil ? value.buttonLabel : "Replace chosen file",
                                   systemImage: value.value == nil ? "square.and.arrow.down" : "arrow.triangle.2.circlepath")

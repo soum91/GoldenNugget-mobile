@@ -1,4 +1,13 @@
-# GoldenNugget Mobile — Desktop 9.7.2 Sync
+# GoldenNugget Mobile
+
+## 9.7.6 (10) — `.batter` picker fix
+
+- Register the `.batter` template file type with iOS, so Files can identify GoldenNugget templates.
+- Allow templates from third-party Files providers that do not classify `.batter` as generic data. The archive parser still validates the selected file before importing it.
+- Route template imports and replacement-file picks through one iOS document picker, preventing the two competing file importer modifiers from shadowing each other.
+- Allow `.batter` selections in Community Catalog's local-import picker as well.
+
+## Previous — Desktop 9.7.2 Sync
 
 ## HotLoad and updates
 
