@@ -66,8 +66,11 @@ struct TemplatesView: View {
             // gates are re-checked: the page is the only place that knows both.
             selection.loadFromDisk(deviceVersion: identity.version)
         }
-        .fileImporter(isPresented: $showImporter,
-                      allowedContentTypes: replaceTarget == nil ? [.item] : replaceContentTypes) { result in
+        // A UIKit document picker, not `.fileImporter`: the other tabs' live
+        // importers could open the shared SwiftUI importer with *their* types
+        // and grey `.batter` out (see DocumentPicker.swift).
+        .documentPicker(isPresented: $showImporter,
+                        contentTypes: { replaceTarget == nil ? [.item] : replaceContentTypes }) { result in
             // .data alone greys out .batter files for File Providers that have
             // not assigned the custom extension a data-conforming type.
             // Importing .item is safe: TemplateFile validates the ZIP/config.

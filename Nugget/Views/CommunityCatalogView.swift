@@ -107,7 +107,7 @@ struct CommunityCatalogView: View {
         .task { if entries.isEmpty { await refresh() } }
         // File Providers do not consistently identify the custom .batter
         // extension as .data. The import parser validates supported formats.
-        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.item]) { result in
+        .documentPicker(isPresented: $showImporter, contentTypes: { [.item] }) { result in
             do { try importFile(result.get()) } catch { message = error.localizedDescription }
         }
         .sheet(isPresented: $showCode) {

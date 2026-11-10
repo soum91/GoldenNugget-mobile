@@ -1,5 +1,11 @@
 # GoldenNugget Mobile
 
+## 9.7.8 (12) — `.batter` picker uses a real iOS document picker
+
+- Templates ("Import .batter template" and option replacement files) and Community Catalog ("Import .batter or portable preset") now open a `UIDocumentPickerViewController` (`Nugget/Views/DocumentPicker.swift`) instead of SwiftUI's `.fileImporter`. On iPhone every `TabView` tab stays alive, and the home, Tweaks, PosterBoard, Files, Presets and Passcode pages each attach their own `.fileImporter`. SwiftUI shares one importer between them, so the Templates picker could open with another page's allowed types and grey out `.batter` files even though Templates requests `.item`. 9.7.6's notes described "one iOS document picker", but that release still used `.fileImporter`.
+- The picker returns a copy (`asCopy: true`) in the app's own temporary inbox, so files from third-party File Providers that never assigned `.batter` a type import without a security-scoped bookmark.
+- Not tested on a signed device in this build.
+
 ## 9.7.7 (11) — Mond `.batter` template/tweak merge fix
 
 - Audited the mobile apply path against the desktop Mond failure (a non-PosterBoard windowing `.batter` reaching PosterBoard staging after a multi-hour backup; the real package is a format-2 `ManagedPreferencesDomain` file template). Source inspection shows mobile is not affected: format-3 community packages import through `CommunityTemplate.load` into `CommunityTemplateStore`, compile into `communityPayloads` and merge into the tweak payloads. The PosterBoard database fetch and `PosterBoard.compile` only run for selected wallpapers, resets or `TemplateFile.isPosterBoard` templates. No mobile reproduction was claimed or found; not device-tested.
