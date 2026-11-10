@@ -10,11 +10,21 @@
       "name": "GoldenNugget Mobile",
       "bundleIdentifier": "com.awesomenull.goldennugget",
       "developerName": "GoldenNugget Team",
-      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.7",
-      "localizedDescription": "GoldenNugget Mobile 9.7.7 from the soum91 fork. Template files that write the same plist as an enabled tweak (such as the Mond iPhone windowing .batter) are now merged with it before the backup instead of silently replacing the tweak keys.",
+      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.8",
+      "localizedDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7).",
       "category": "utilities",
       "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
       "versions": [
+        {
+          "version": "9.7.8",
+          "buildVersion": "12",
+          "date": "2026-11-10T21:20:15Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7).",
+          "changelog": "Templates and Community Catalog use a UIKit document picker instead of SwiftUI's shared .fileImporter, which could open with another tab's file types and grey out .batter. Picked files are copied into the app, so File Providers without a .batter type still work.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.8/GoldenNuggetMobile-9.7.8-build12.ipa",
+          "size": 15573158,
+          "minOSVersion": "26.0"
+        },
         {
           "version": "9.7.7",
           "buildVersion": "11",
@@ -36,13 +46,13 @@
           "minOSVersion": "26.0"
         }
       ],
-      "version": "9.7.7",
-      "buildVersion": "11",
-      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.7/GoldenNuggetMobile-9.7.7-build11.ipa",
-      "size": 15570392,
+      "version": "9.7.8",
+      "buildVersion": "12",
+      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.8/GoldenNuggetMobile-9.7.8-build12.ipa",
+      "size": 15573158,
       "minOSVersion": "26.0",
-      "versionDate": "2026-11-10T20:09:39Z",
-      "versionDescription": "GoldenNugget Mobile 9.7.7 from the soum91 fork. Template files that write the same plist as an enabled tweak (such as the Mond iPhone windowing .batter) are now merged with it before the backup instead of silently replacing the tweak keys."
+      "versionDate": "2026-11-10T21:20:15Z",
+      "versionDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7)."
     }
   ]
 }
