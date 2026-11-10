@@ -1,9 +1,10 @@
 # GoldenNugget Mobile
 
-## 9.7.7 (11) — Mond `.batter` template/tweak merge fix (pre-release)
+## 9.7.7 (11) — Mond `.batter` template/tweak merge fix
 
 - Audited the mobile apply path against the desktop Mond failure (a non-PosterBoard windowing `.batter` reaching PosterBoard staging after a multi-hour backup; the real package is a format-2 `ManagedPreferencesDomain` file template). Source inspection shows mobile is not affected: format-3 community packages import through `CommunityTemplate.load` into `CommunityTemplateStore`, compile into `communityPayloads` and merge into the tweak payloads. The PosterBoard database fetch and `PosterBoard.compile` only run for selected wallpapers, resets or `TemplateFile.isPosterBoard` templates. No mobile reproduction was claimed or found; not device-tested.
 - Fixed a silent overwrite: a file template payload (such as the real Mond iPhone windowing package's `ManagedPreferencesDomain/mobile/com.apple.springboard.plist`) used to be upserted over an enabled tweak's payload for the same row, discarding those tweak keys. `TweakCompiler.foldingTemplates` now merges them before `prepareRun` (template as base, tweak keys win, matching desktop). A collision that cannot be merged fails before any backup. Not compiled in this environment; not device-tested.
+- `.github/workflows/build.yml` now publishes tagged releases: pushing `v<version>` (or `v<version>-pre.<build>` for a pre-release) attaches the IPA it just built as `GoldenNuggetMobile-<version>-build<build>.ipa`, with this CHANGELOG section as notes. It refuses to publish if the tag, `Info.plist` and built IPA disagree, if the section is missing, or if the release already exists. It does not edit the FlareStore `repo.json`.
 - Added `scripts/check-community-posterboard-routing.py`, a regression check that needs no macOS toolchain. It pins those routing invariants in the Swift sources and routes every desktop `community-batters/*.batter` plus a Mond-shaped fixture to the community path. A genuine PosterBoard template still routes to PosterBoard.
 
 ## 9.7.6 (10) — `.batter` picker fix
