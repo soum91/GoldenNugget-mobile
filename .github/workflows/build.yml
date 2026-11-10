@@ -3,7 +3,19 @@ name: Build IPA
 on:
   push:
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Publish the built IPA as this release tag (v<version> or v<version>-pre.<build>). Leave empty for a plain build."
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: build-ipa-${{ github.event.release.tag_name || inputs.release_tag || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -74,11 +86,17 @@ jobs:
       # publishes the IPA just built. The asset name carries the version and
       # build number, and the notes are the matching CHANGELOG.md section,
       # never generic text. The FlareStore feed (repo.json) is not touched.
-      - name: Publish release (tags v* only)
-        if: startsWith(github.ref, 'refs/tags/v')
+      # Three ways in: a pushed v* tag, a release published in the GitHub UI
+      # (the IPA is then attached to it), or a manual run with release_tag set
+      # (the tag is created at the built commit).
+      - name: Publish release (v* tags only)
+        if: >-
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ github.event.release.tag_name || inputs.release_tag || github.ref_name }}
         run: |
           set -euo pipefail
           INFO=layout/Applications/GoldenNuggetMobile.app/Info.plist
@@ -115,11 +133,21 @@ jobs:
             echo "Built from \`${GITHUB_SHA}\`."
           } >> "$RUNNER_TEMP/notes.md"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists. Refusing to overwrite a release asset." >&2
-            exit 1
+            # Published from the UI (or by a parallel tag push): attach the IPA
+            # if it is not there yet, never replace an existing asset.
+            if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "$(basename "$ASSET")"; then
+              echo "Release $TAG already has $(basename "$ASSET"); nothing to do."
+              exit 0
+            fi
+            gh release upload "$TAG" "$ASSET"
+            exit 0
+          fi
+          TARGET_FLAG="--verify-tag"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET_FLAG="--target ${GITHUB_SHA}"
           fi
           # shellcheck disable=SC2086
-          gh release create "$TAG" "$ASSET" $FLAGS --verify-tag \
+          gh release create "$TAG" "$ASSET" $FLAGS $TARGET_FLAG \
             --title "GoldenNugget Mobile ${VERSION} (${BUILD})$([ "$KIND" = pre-release ] && echo ' pre-release')" \
             --notes-file "$RUNNER_TEMP/notes.md"
 
