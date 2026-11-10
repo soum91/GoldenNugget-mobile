@@ -2,7 +2,7 @@
   "name": "GoldenNugget Mobile (soum91 fork)",
   "identifier": "com.soum91.goldennugget.source",
   "subtitle": "On-device iOS customization",
-  "description": "FlareStore source for the soum91 GoldenNugget Mobile fork. Currently serves the verified upstream 9.7.5 IPA; a forked 9.7.6 build with the .batter picker fix is pending.",
+  "description": "FlareStore builds of the soum91 GoldenNugget Mobile fork, including the .batter file-picker fix.",
   "sourceURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/repo.json",
   "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
   "apps": [
@@ -10,11 +10,21 @@
       "name": "GoldenNugget Mobile",
       "bundleIdentifier": "com.awesomenull.goldennugget",
       "developerName": "GoldenNugget Team",
-      "subtitle": "On-device tweaks for iOS 26 and 27",
-      "localizedDescription": "GoldenNugget Mobile runs on-device customization and partial restore workflows for iOS 26 and 27. This 9.7.5 IPA is the official upstream release. The fork's 9.7.6 .batter file-picker fix is in source code only and is not included in this download yet. Back up the device before applying tweaks.",
+      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.6",
+      "localizedDescription": "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter template import file picker by using a single document importer, supporting generic Files items, and registering the .batter document type.",
       "category": "utilities",
       "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
       "versions": [
+        {
+          "version": "9.7.6",
+          "buildVersion": "10",
+          "date": "2026-11-10T04:23:23Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter template import file picker by using a single document importer, supporting generic Files items, and registering the .batter document type.",
+          "changelog": "Fix .batter file selection in Templates and Community Catalog, avoid conflicting SwiftUI file importers, and register .batter UTI.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.6/GoldenNuggetMobile.ipa",
+          "size": 15567955,
+          "minOSVersion": "26.0"
+        },
         {
           "version": "9.7.5",
           "buildVersion": "9",
@@ -26,13 +36,13 @@
           "minOSVersion": "26.0"
         }
       ],
-      "version": "9.7.5",
-      "buildVersion": "9",
-      "downloadURL": "https://github.com/GoldenNugget-Team/GoldenNugget-mobile/releases/download/9.7.5/GoldenNuggetMobile.ipa",
-      "size": 14891809,
+      "version": "9.7.6",
+      "buildVersion": "10",
+      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.6/GoldenNuggetMobile.ipa",
+      "size": 15567955,
       "minOSVersion": "26.0",
-      "versionDate": "2026-11-03T17:15:01Z",
-      "versionDescription": "GoldenNugget Mobile runs on-device customization and partial restore workflows for iOS 26 and 27. This 9.7.5 IPA is the official upstream release. The fork's 9.7.6 .batter file-picker fix is in source code only and is not included in this download yet. Back up the device before applying tweaks."
+      "versionDate": "2026-11-10T04:23:23Z",
+      "versionDescription": "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter template import file picker by using a single document importer, supporting generic Files items, and registering the .batter document type."
     }
   ]
 }
