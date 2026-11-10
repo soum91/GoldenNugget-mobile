@@ -1,5 +1,18 @@
 # Changelog
 
+## [v9.7.7] - 2026-11-10
+
+## Verified changes since v9.7.6
+
+- Let the build workflow attach IPAs to UI-published or dispatched releases ([`54659233`](https://github.com/soum91/GoldenNugget-mobile/commit/54659233dd93b2395c774870ecf933e620f637ce); `.github/workflows/build.yml`)
+- Publish tagged release IPAs from the build workflow ([`00c5d41a`](https://github.com/soum91/GoldenNugget-mobile/commit/00c5d41a22e4b8d6958a65762993d3af7eb9c497); `.github/workflows/build.yml`)
+- Cross-check Mond .batter PosterBoard routing; add regression guard ([`8b538116`](https://github.com/soum91/GoldenNugget-mobile/commit/8b538116959190b41c2172b0a348b8dbf12ca0aa); `docs/diagnostics/2026-11-10-mond-posterboard-crosscheck.md`, `scripts/check-community-posterboard-routing.py`)
+- Add cross-repository Mond PosterBoard regression handoff for Claude ([`37d5c07b`](https://github.com/soum91/GoldenNugget-mobile/commit/37d5c07bd446786da4cccdc65d84cf1d7f8f23c5); `docs/diagnostics/2026-11-10-mond-posterboard-crosscheck.md`)
+- fix(flarestore): show only 9.7.6 patched IPA ([`792c2dc5`](https://github.com/soum91/GoldenNugget-mobile/commit/792c2dc5cc3b76d9350f612e92bc28c82b9a9c6b); `repo.json`)
+- chore(release): point FlareStore to GoldenNugget 9.7.6 IPA ([`d61ac8d1`](https://github.com/soum91/GoldenNugget-mobile/commit/d61ac8d1357d234e8b24ad922b5fccaecf337245); `repo.json`)
+
+[Inspect exact code changes](https://github.com/soum91/GoldenNugget-mobile/compare/v9.7.6...v9.7.7)
+
 ## [v9.7.6] - 2026-11-10
 
 ## Verified changes since project start
