@@ -30,3 +30,14 @@ See desktop evidence folder:
 - https://github.com/soum91/GoldenNugget/blob/main/docs/diagnostics/evidence/IMG_8487.jpeg (expanded log)
 
 No user real name, account secrets or device serials included in this handoff.
+
+## Claude cross-check result (2026-11-10)
+
+**Mobile is not affected by the desktop routing bug (source inspection; not device-tested).**
+
+- Mobile equivalents: `TemplateFile.isPosterBoard` (classification); `CommunityTemplate.load` / `CommunityTemplateStore.compile` (format-3 community packages); `TweakCompiler.merging` (community + built-in payloads); `GoldenNuggetEngine` PosterBoard branch → `PosterBoardBackup.fetch` + `PosterBoard.compile` (DB fetch and staging).
+- A community-only `.batter` (empty domain, no options, no `container/`) is taken by `CommunityTemplate.load` on import (`TemplatesView`), never becomes a `TemplateFile`, and its writes land in `tweakPayloads`. The PosterBoard branch opens only on `posterBoard.isActive || !posterBoardTemplates.isEmpty`, and only `isPosterBoard` templates are appended. Mobile's `TemplateFile` also refuses packages without `options`/`domain`, so an empty-domain package can't reach the wallpaper path.
+- Genuine PosterBoard templates and resets keep their behavior; this pass made no code change there.
+- The PosterBoard DB fetch on mobile runs inside the PosterBoard branch, after the pre-tunnel checks (`checkAirliftCanApply`, reset/wallpaper conflict, template payload staging), so the predictable errors there already fail before the costly step.
+- Regression guard: `scripts/check-community-posterboard-routing.py` (Python, no Xcode needed). It pins the invariants above in the Swift sources and routes every desktop `community-batters/*.batter` plus a Mond-shaped fixture to the community path. Result: `COMMUNITY_POSTERBOARD_ROUTING_OK: 10 community fixture(s)`.
+- Unverified: signed-device apply of a community windowing `.batter` on iOS 27.x through the mobile app.

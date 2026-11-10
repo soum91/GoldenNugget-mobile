@@ -1,5 +1,10 @@
 # GoldenNugget Mobile
 
+## Unreleased (2026-11-10) — Mond `.batter` PosterBoard cross-check
+
+- Audited the mobile apply path against the desktop Mond failure (a community-only windowing `.batter` reaching PosterBoard staging after a multi-hour backup). Source inspection shows mobile is not affected: format-3 community packages import through `CommunityTemplate.load` into `CommunityTemplateStore`, compile into `communityPayloads` and merge into the tweak payloads. The PosterBoard database fetch and `PosterBoard.compile` only run for selected wallpapers, resets or `TemplateFile.isPosterBoard` templates. No mobile reproduction was claimed or found; not device-tested.
+- Added `scripts/check-community-posterboard-routing.py`, a regression check that needs no macOS toolchain. It pins those routing invariants in the Swift sources and routes every desktop `community-batters/*.batter` plus a Mond-shaped fixture to the community path. A genuine PosterBoard template still routes to PosterBoard.
+
 ## 9.7.6 (10) — `.batter` picker fix
 
 - Register the `.batter` template file type with iOS, so Files can identify GoldenNugget templates.
