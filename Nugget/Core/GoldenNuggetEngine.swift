@@ -301,7 +301,7 @@ class GoldenNuggetEngine {
                                              hiddenTweakIDs: safety.hiddenTweakIDs,
                                              forcedDaemonKeys: safety.forcedDaemonKeys)
 
-        let tweakPayloads = try TweakCompiler.merging(community: communityPayloads, builtIn: compiled.payloads, deviceVersion: deviceVersion)
+        var tweakPayloads = try TweakCompiler.merging(community: communityPayloads, builtIn: compiled.payloads, deviceVersion: deviceVersion)
 
         // The status bar is built here, on the version the page already read, and
         // for the same reason the plist compile is: a payload that cannot be built
@@ -433,6 +433,16 @@ class GoldenNuggetEngine {
                 templatePayloads += try TemplateDelivery.payloads(
                     for: template, into: work, log: { AppLog.write($0) })
             }
+            // A template that ships a whole plist an enabled tweak also writes
+            // would otherwise be upserted over it (last row wins). Merge them
+            // here, before `prepareRun`, the way desktop's merge_duplicates does.
+            let folded = try TweakCompiler.foldingTemplates(templatePayloads, into: tweakPayloads)
+            for payload in templatePayloads where !folded.templates.contains(payload) {
+                log("  → \(payload.label): merged with the enabled tweaks for that file "
+                    + "(template as base, tweak keys on top)")
+            }
+            tweakPayloads = folded.tweaks
+            templatePayloads = folded.templates
             if !templatePayloads.isEmpty {
                 let total = templatePayloads.reduce(0) { $0 + $1.byteCount }
                 log("Templates: \(templatePayloads.count) payload(s) ("

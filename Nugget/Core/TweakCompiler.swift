@@ -161,6 +161,49 @@ enum TweakCompiler {
         }
         return result
     }
+    /// Fold file-template payloads into tweak payloads that hit the same row.
+    ///
+    /// `TweakInjector` upserts by path, so two payloads for one row used to
+    /// mean the later one silently replaced the earlier. The engine appends
+    /// template payloads last, so a whole-plist template such as Mond's
+    /// iPhone windowing package (`ManagedPreferencesDomain` /
+    /// `mobile/com.apple.springboard.plist`) wiped every built-in or
+    /// community SpringBoard key in the same apply without a word.
+    ///
+    /// Desktop's `restore.merge_duplicates` defines the order: the template
+    /// file is the base and the tweak keys merge over it. A collision that is
+    /// not two dictionary plists is refused, before any tunnel or backup.
+    /// Returns the merged tweak payloads and the template payloads that did
+    /// not collide.
+    static func foldingTemplates(_ templates: [TweakPayload], into tweaks: [TweakPayload])
+        throws -> (tweaks: [TweakPayload], templates: [TweakPayload]) {
+        var merged = tweaks
+        var remaining: [TweakPayload] = []
+        for template in templates {
+            guard let index = merged.firstIndex(where: {
+                $0.domain == template.domain && $0.relativePath == template.relativePath
+            }) else {
+                remaining.append(template)
+                continue
+            }
+            let tweak = merged[index]
+            guard template.relativePath.hasSuffix(".plist"),
+                  var values = try PropertyListSerialization.propertyList(
+                      from: template.bytes(), options: [], format: nil) as? [String: Any],
+                  let overlay = try PropertyListSerialization.propertyList(
+                      from: tweak.bytes(), options: [], format: nil) as? [String: Any] else {
+                throw GoldenNuggetError("A template replaces \(template.label), which an "
+                    + "enabled tweak also writes, and the two cannot be merged. Turn off one of "
+                    + "them. Nothing was backed up or restored.")
+            }
+            values.merge(overlay) { _, tweakValue in tweakValue }
+            let data = try PropertyListSerialization.data(fromPropertyList: values, format: .xml, options: 0)
+            merged[index] = TweakPayload(domain: tweak.domain, relativePath: tweak.relativePath,
+                                         contents: data, owner: tweak.owner)
+        }
+        return (merged, remaining)
+    }
+
     struct Result {
         let payloads: [TweakPayload]
         /// Locations that produced a file, in write order — for the log.

@@ -41,3 +41,11 @@ No user real name, account secrets or device serials included in this handoff.
 - The PosterBoard DB fetch on mobile runs inside the PosterBoard branch, after the pre-tunnel checks (`checkAirliftCanApply`, reset/wallpaper conflict, template payload staging), so the predictable errors there already fail before the costly step.
 - Regression guard: `scripts/check-community-posterboard-routing.py` (Python, no Xcode needed). It pins the invariants above in the Swift sources and routes every desktop `community-batters/*.batter` plus a Mond-shaped fixture to the community path. Result: `COMMUNITY_POSTERBOARD_ROUTING_OK: 10 community fixture(s)`.
 - Unverified: signed-device apply of a community windowing `.batter` on iOS 27.x through the mobile app.
+
+### Correction with the real package (2026-11-10 14:15)
+
+The real Mond file is format 2, `ManagedPreferencesDomain`, a whole `mobile/com.apple.springboard.plist` behind an inverted `remove` option (see the desktop evidence folder), not a format-3 community package. On mobile it fails `CommunityTemplate.load` (has options and a `container/`), loads as a `TemplateFile` (format 2 ≤ `currentFormat`), is not `isPosterBoard`, and goes through `TemplateDelivery`. Still no PosterBoard involvement.
+
+**Real mobile bug found:** template payloads were appended after the tweak payloads, and `TweakInjector` upserts by path. Mond plus any enabled built-in or community SpringBoard tweak would silently replace those tweaks' managed plist with Mond's two keys. Fixed: `TweakCompiler.foldingTemplates` merges a colliding template plist with the tweak payload before `prepareRun` (template as base, tweak keys win, same as desktop `merge_duplicates`). A non-plist collision throws before any tunnel or backup. Not compiled here (no Swift toolchain) and not device-tested.
+
+Note: mobile has no device-baseline merge, so Mond's managed `com.apple.springboard.plist` replaces the device's managed copy whole, as the package description warns. Desktop merges onto the backup's copy instead.

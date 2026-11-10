@@ -100,6 +100,18 @@ check('(raw["options"] as? [Any] ?? []).isEmpty' in community,
       "CommunityTemplate.load must refuse packages with wallpaper options")
 
 
+# 8. Template payloads that collide with tweak payloads are merged before the
+#    tunnel/backup, not upserted over them by TweakInjector (last row wins).
+compiler = read("Nugget/Core/TweakCompiler.swift")
+check("static func foldingTemplates(" in compiler, "TweakCompiler.foldingTemplates missing")
+fold = engine.find("TweakCompiler.foldingTemplates(templatePayloads, into: tweakPayloads)")
+prep = engine.find("let udid = try await prepareRun()")
+check(fold != -1 and prep != -1 and fold < prep,
+      "template/tweak payload folding must run before prepareRun (pre-backup)")
+check("values.merge(overlay) { _, tweakValue in tweakValue }" in compiler,
+      "folding must keep desktop's order: template base, tweak keys win")
+
+
 # --- behavioural routing over real fixtures ---------------------------------
 def community_accepts(config: dict, names: list[str]) -> bool:
     """Mirror of CommunityTemplate.load's package gate."""
@@ -131,7 +143,7 @@ mond = {"title": "Mond iOS 27 windowing (fixture)", "author": "fixture", "format
                     "writes": [{"type": "plist",
                                 "path": "/var/Managed Preferences/mobile/com.apple.springboard.plist",
                                 "values": {"SBChamoisWindowingEnabled": True}}]}]}
-fixtures.append(("inline:mond", mond, ["config.json"]))
+fixtures.append(("inline:community-windowing", mond, ["config.json"]))
 
 desktop = ROOT.parent / "goldennugget" / "community-batters"
 if not desktop.is_dir():
@@ -146,6 +158,22 @@ for name, cfg, names in fixtures:
     r = route(cfg, names)
     check(r == "community", f"{name}: community .batter routed to {r}, expected community")
 
+# The real Mond package (desktop docs/diagnostics/evidence/Mond-iPhone-Windowing-Mobile.batter):
+# format 2, ManagedPreferencesDomain, whole springboard plist behind a remove option.
+# It is a file template, not a community package, and must not route to PosterBoard.
+real_mond_cfg = {"title": "Mond: iPhone Windowing (Mobile Experiment)", "format_version": "2",
+                 "domain": "ManagedPreferencesDomain", "min_version": "27.0.1", "max_version": "27.0.1",
+                 "options": [{"type": "remove", "files": ["container/mobile/com.apple.springboard.plist"],
+                              "inverted": True, "default_value": False}]}
+real_mond_names = ["config.json", "container/mobile/com.apple.springboard.plist"]
+real_path = ROOT.parent / "goldennugget" / "docs/diagnostics/evidence/Mond-iPhone-Windowing-Mobile.batter"
+if real_path.is_file():
+    with zipfile.ZipFile(real_path) as z:
+        real_mond_names = z.namelist()
+        real_mond_cfg = json.loads(z.read("config.json"))
+check(route(real_mond_cfg, real_mond_names) == "template-domain",
+      f"real Mond package routed to {route(real_mond_cfg, real_mond_names)}, expected template-domain")
+
 wallpaper = {"title": "wallpaper", "author": "x", "format_version": "2",
              "domain": "AppDomain-com.apple.PosterBoard", "options": []}
 check(route(wallpaper, ["config.json", "container/x"]) == "posterboard",
@@ -157,4 +185,5 @@ if FAILURES:
         print("  -", f)
     sys.exit(1)
 print(f"COMMUNITY_POSTERBOARD_ROUTING_OK: {len(fixtures)} community fixture(s) stay off PosterBoard; "
-      "PosterBoard templates still route to PosterBoard")
+      "the real Mond file template routes to its own domain; PosterBoard templates still route "
+      "to PosterBoard; template/tweak collisions are merged before prepareRun")
