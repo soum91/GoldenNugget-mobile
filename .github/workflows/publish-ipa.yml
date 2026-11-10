@@ -1,0 +1,118 @@
+name: Publish GoldenNugget IPA to FlareStore
+
+# Only a manually requested, successful build from this fork's main branch
+# can publish an IPA. PR builds and automatic pushes never publish.
+on:
+  workflow_run:
+    workflows: ["Build IPA"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'workflow_dispatch' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Download verified IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GoldenNuggetMobile
+          path: dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read release metadata and update FlareStore JSON
+        env:
+          BUILD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import plistlib
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          ipa = Path("dist/GoldenNuggetMobile.ipa")
+          assert ipa.is_file() and ipa.stat().st_size > 1_000_000, "Build did not produce a valid IPA"
+          with open("layout/Applications/GoldenNuggetMobile.app/Info.plist", "rb") as f:
+              info = plistlib.load(f)
+          version = str(info["CFBundleShortVersionString"])
+          build = str(info["CFBundleVersion"])
+          assert version == "9.7.6" and build == "10", "Unexpected source version; inspect before releasing"
+          tag = f"v{version}"
+          download = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{tag}/GoldenNuggetMobile.ipa"
+          description = (
+              "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter "
+              "template import file picker by using a single document importer, "
+              "supporting generic Files items, and registering the .batter document type."
+          )
+          changelog = (
+              "Fix .batter file selection in Templates and Community Catalog, "
+              "avoid conflicting SwiftUI file importers, and register .batter UTI."
+          )
+          now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          size = ipa.stat().st_size
+          entry = {
+              "version": version,
+              "buildVersion": build,
+              "date": now,
+              "localizedDescription": description,
+              "changelog": changelog,
+              "downloadURL": download,
+              "size": size,
+              "minOSVersion": "26.0",
+          }
+          path = Path("repo.json")
+          source = json.loads(path.read_text())
+          app = source["apps"][0]
+          app["versions"] = [entry] + [x for x in app["versions"] if x["version"] != version]
+          app.update({
+              "version": version, "buildVersion": build,
+              "downloadURL": download, "size": size, "minOSVersion": "26.0",
+              "versionDate": now, "versionDescription": description,
+              "localizedDescription": description,
+              "subtitle": f"On-device tweaks for iOS 26 and 27 · {version}",
+          })
+          source["description"] = "FlareStore builds of the soum91 GoldenNugget Mobile fork, including the .batter file-picker fix."
+          path.write_text(json.dumps(source, indent=2) + "\n")
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              env.write(f"RELEASE_TAG={tag}\n")
+              env.write(f"BUILD_SHA={os.environ['BUILD_SHA']}\n")
+          PY
+
+      - name: Publish IPA release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists. Refusing to overwrite a release asset."
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" dist/GoldenNuggetMobile.ipa \
+            --target "$BUILD_SHA" \
+            --title "GoldenNugget Mobile 9.7.6 (10)" \
+            --notes "Fix .batter template file picker with native Files imports, shared SwiftUI importer, and document type registration. Unsigned IPA for sideloading."
+
+      - name: Commit FlareStore JSON update
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repo.json
+          git commit -m "chore(release): point FlareStore to GoldenNugget 9.7.6 IPA"
+          git pull --rebase origin main
+          git push origin HEAD:main
