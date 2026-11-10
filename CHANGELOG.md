@@ -1,5 +1,13 @@
 # Changelog
 
+## [v9.7.8] - 2026-11-10
+
+## Verified changes since v9.7.7
+
+- Use a UIKit document picker for .batter imports ([`77a8eb1a`](https://github.com/soum91/GoldenNugget-mobile/commit/77a8eb1a598436dfaa7ea0de5dde4de535cd8b49); `Nugget/Views/CommunityCatalogView.swift`, `Nugget/Views/DocumentPicker.swift`, `Nugget/Views/TemplatesView.swift`, and 2 more)
+
+[Inspect exact code changes](https://github.com/soum91/GoldenNugget-mobile/compare/v9.7.7...v9.7.8)
+
 ## [v9.7.7] - 2026-11-10
 
 ## Verified changes since v9.7.6
