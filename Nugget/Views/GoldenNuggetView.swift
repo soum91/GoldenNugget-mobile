@@ -109,7 +109,8 @@ struct GoldenNuggetView: View {
     /// The apply used to run straight off the button; the reference routes it
     /// through a summary the user confirms, and only then opens the device.
     @State private var applyPreview: ApplyPreview?
-    @State private var showApplyConfirm = false
+    /// Set by the summary sheet's Apply; consumed in its `onDismiss`.
+    @State private var applyAfterDismiss = false
     /// The pages the reset sheet has open, and whether a reset is in flight.
     ///
     /// Separate from `running`, which is the *apply* run: the two never overlap
@@ -289,15 +290,27 @@ struct GoldenNuggetView: View {
         }
         // The pre-apply summary the reference shows before touching the device.
         // Applying from here is the only path to `runApply()`.
-        .sheet(isPresented: $showApplyConfirm) {
-            if let applyPreview {
-                ApplyConfirmSheet(preview: applyPreview,
-                                  onApply: {
-                                      showApplyConfirm = false
-                                      runApply()
-                                  },
-                                  onCancel: { showApplyConfirm = false })
-            }
+        // `.sheet(item:)`, not `.sheet(isPresented:)` + `if let`: setting the
+        // preview and the flag in one pass could present the sheet with the
+        // stale nil preview, an empty grey sheet with no way to apply or cancel.
+        //
+        // The run starts from `onDismiss`, after the sheet is fully gone, so
+        // its status line, alerts and the "Applying…" button state are not
+        // swallowed by the dismissal animation.
+        .sheet(item: $applyPreview, onDismiss: {
+            guard applyAfterDismiss else { return }
+            applyAfterDismiss = false
+            runApply()
+        }) { preview in
+            ApplyConfirmSheet(preview: preview,
+                              onApply: {
+                                  applyAfterDismiss = true
+                                  applyPreview = nil
+                              },
+                              onCancel: {
+                                  applyAfterDismiss = false
+                                  applyPreview = nil
+                              })
         }
     }
 
@@ -1154,7 +1167,6 @@ struct GoldenNuggetView: View {
                 hiddenTweakIDs: safety.hiddenTweakIDs,
                 forcedDaemonKeys: safety.forcedDaemonKeys,
                 safetyWarnings: safety.warnings(for: tweakSelection) + safety.warnings(forFeatures: features))
-            showApplyConfirm = true
         } catch {
             errorText = error.localizedDescription
         }
@@ -1214,7 +1226,9 @@ struct GoldenNuggetView: View {
             await MainActor.run {
                 running = false
                 runStarted = nil
-                showStatus(text, tone)
+                // Only success fades. A failure or a stop stays on screen until
+                // the next status replaces it, so the reason is never missed.
+                showStatus(text, tone, autoHide: succeeded)
                 showRebootNotice = succeeded
                 // The reset is spent. It is deliberately not persisted, and it must not
                 // survive its own delivery either — the next run would clear the store
@@ -1397,6 +1411,14 @@ struct GoldenNuggetView: View {
     func spawnLogPrinter() {
         GoldenNuggetEngine.shared.onLog = { line in
             RunLog.shared.append(line)
+        }
+        // A run that left its marker behind never reached `loggedRun`'s end:
+        // iOS suspended or killed the app mid-run. Say so where the user looks.
+        if let unfinished = RunKeepAlive.takeUnfinishedRun() {
+            let line = "⚠ The last run (\(unfinished)) never finished: iOS closed GoldenNugget "
+                + "while it was running. Keep the app on screen until a run ends."
+            GoldenNuggetEngine.shared.log(line)
+            showStatus(line, .warning, autoHide: false)
         }
     }
 }

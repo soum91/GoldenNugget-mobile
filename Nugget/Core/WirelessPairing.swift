@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import SwiftUI
 import UIKit
@@ -74,6 +75,22 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
     /// without it every run is a brand-new host to the device.
     private static let hostAltIRKKey = "com.awesomenull.goldennugget.wirelessPair.hostAltIRK"
 
+    /// SHA-256 of the last record this object wrote. Lets `start()` tell a
+    /// record GoldenNugget paired from one imported from elsewhere.
+    private static let ownRecordFingerprintKey = "com.awesomenull.goldennugget.wirelessPair.ownRecordSHA256"
+
+    private static func fingerprint(_ data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Whether the record at `AppPaths.pairingFile` is the one GoldenNugget's
+    /// own pairing last produced.
+    private static func currentRecordIsOurs() -> Bool {
+        guard let stored = UserDefaults.standard.string(forKey: ownRecordFingerprintKey),
+              let data = try? Data(contentsOf: AppPaths.pairingFile) else { return false }
+        return fingerprint(data) == stored
+    }
+
     /// The Bonjour advertiser.  Held for as long as the run is advertising; the
     /// page only ever talks to this object.
     private var netService: NetService?
@@ -89,6 +106,8 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
     /// and the app is suspended a few seconds after it goes to the background
     /// unless it holds one of these.  UIKit grants roughly 30 seconds.
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    /// Whether this object holds a `BackgroundAudio` reference.
+    private var holdingAudio = false
 
     private override init() {}
 
@@ -96,6 +115,11 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
 
     private func beginBackgroundTask() {
         endBackgroundTask()
+        // ~30 s of task time is not enough to open Settings, find the row and
+        // type the PIN; the silent session keeps the listener running until the
+        // run finishes (BackgroundAudio.swift).
+        BackgroundAudio.acquire("wireless pairing")
+        holdingAudio = true
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "GoldenNugget.WirelessPairing") { [weak self] in
             Task { @MainActor in
                 GoldenNuggetEngine.shared.log("wireless pair: background time expired before the device connected")
@@ -110,6 +134,10 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
     }
 
     private func endBackgroundTask() {
+        if holdingAudio {
+            holdingAudio = false
+            BackgroundAudio.release()
+        }
         guard backgroundTask != .invalid else { return }
         UIApplication.shared.endBackgroundTask(backgroundTask)
         backgroundTask = .invalid
@@ -136,7 +164,14 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
 
         generation += 1
         let runGeneration = generation
-        let savedAltIRK = UserDefaults.standard.string(forKey: Self.hostAltIRKKey)
+        // Reuse a host identity only if GoldenNugget's own pairing produced the
+        // record on disk. A record imported from iloader, a computer or another
+        // tool carries *that* host's key pair and altIRK; advertising with them
+        // makes the device resolve this service as the host it already trusts
+        // (it was listed as "iloader" under Paired Devices) and it never offers
+        // GoldenNugget as a device to pair (reported 2026-11-11).
+        let reuseIdentity = Self.currentRecordIsOurs()
+        let savedAltIRK = reuseIdentity ? UserDefaults.standard.string(forKey: Self.hostAltIRKKey) : nil
         // Rust cannot cancel its accept/handshake. Give every run its own file
         // so a superseded run cannot overwrite the currently trusted record.
         let stage = FileManager.default.temporaryDirectory
@@ -144,7 +179,7 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
         let stagedRecord = stage.appendingPathComponent("pairingfile.mobiledevicepairing")
         do {
             try FileManager.default.createDirectory(at: stage, withIntermediateDirectories: true)
-            if FileManager.default.fileExists(atPath: AppPaths.pairingFile.path) {
+            if reuseIdentity, FileManager.default.fileExists(atPath: AppPaths.pairingFile.path) {
                 try FileManager.default.copyItem(at: AppPaths.pairingFile, to: stagedRecord)
             }
         } catch {
@@ -155,7 +190,9 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
         let outPath = stagedRecord.path(percentEncoded: false)
 
         GoldenNuggetEngine.shared.log("wireless pair: advertising as \(Self.hostName)/\(MinimuxerConstants.defaultHostModel), "
-            + "record → \(AppPaths.pairingFile.lastPathComponent)")
+            + "record → \(AppPaths.pairingFile.lastPathComponent), "
+            + (reuseIdentity ? "reusing GoldenNugget's own host identity"
+                             : "fresh host identity (the current record was not made by GoldenNugget's pairing)"))
         beginBackgroundTask()
 
         // DispatchQueue, not Task.detached: `al_pairing_run_host` blocks a whole
@@ -234,6 +271,7 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
             do {
                 let record = try Data(contentsOf: URL(fileURLWithPath: paired.pairingFilePath))
                 try record.write(to: AppPaths.pairingFile, options: .atomic)
+                UserDefaults.standard.set(Self.fingerprint(record), forKey: Self.ownRecordFingerprintKey)
             } catch {
                 phase = .failed(error.localizedDescription)
                 GoldenNuggetEngine.shared.log("wireless pair: could not save record — \(error.localizedDescription)")

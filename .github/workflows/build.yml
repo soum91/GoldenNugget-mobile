@@ -3,12 +3,26 @@ name: Build IPA
 on:
   push:
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Publish the built IPA as this release tag (v<version> or v<version>-pre.<build>). Leave empty for a plain build."
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: build-ipa-${{ github.event.release.tag_name || inputs.release_tag || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     name: Build unsigned IPA
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -66,5 +80,75 @@ jobs:
           name: GoldenNuggetMobile
           path: build/GoldenNuggetMobile.ipa
           if-no-files-found: error
+
+      # Tagged releases: pushing `v<version>` (or `v<version>-pre.<build>` for a
+      # pre-release, which `releases/latest` and the in-app updater ignore)
+      # publishes the IPA just built. The asset name carries the version and
+      # build number, and the notes are the matching CHANGELOG.md section,
+      # never generic text. The FlareStore feed (repo.json) is not touched.
+      # Three ways in: a pushed v* tag, a release published in the GitHub UI
+      # (the IPA is then attached to it), or a manual run with release_tag set
+      # (the tag is created at the built commit).
+      - name: Publish release (v* tags only)
+        if: >-
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.release_tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          INFO=layout/Applications/GoldenNuggetMobile.app/Info.plist
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INFO")
+          BUILD=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$INFO")
+          if [ "$TAG" = "v${VERSION}" ]; then
+            KIND=release; FLAGS=""
+          elif [ "$TAG" = "v${VERSION}-pre.${BUILD}" ]; then
+            KIND=pre-release; FLAGS="--prerelease"
+          else
+            echo "Tag $TAG matches neither v${VERSION} nor v${VERSION}-pre.${BUILD}; refusing to publish." >&2
+            exit 1
+          fi
+          BUILT=$(unzip -p build/GoldenNuggetMobile.ipa 'Payload/*.app/Info.plist' > "$RUNNER_TEMP/built.plist" && \
+                  /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$RUNNER_TEMP/built.plist")
+          if [ "$BUILT" != "$BUILD" ]; then
+            echo "Built IPA reports build $BUILT, expected $BUILD; refusing to publish." >&2
+            exit 1
+          fi
+          ASSET="build/GoldenNuggetMobile-${VERSION}-build${BUILD}.ipa"
+          cp build/GoldenNuggetMobile.ipa "$ASSET"
+          # The CHANGELOG section headed "## <version> (<build>)".
+          awk -v head="## ${VERSION} (${BUILD})" '
+            index($0, head) == 1 { on = 1; next }
+            on && /^## / { exit }
+            on { print }' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "CHANGELOG.md has no section for ${VERSION} (${BUILD}); refusing to publish." >&2
+            exit 1
+          fi
+          {
+            echo
+            echo "Unsigned IPA for sideloading. SHA-256: \`$(shasum -a 256 "$ASSET" | cut -d' ' -f1)\`"
+            echo "Built from \`${GITHUB_SHA}\`."
+          } >> "$RUNNER_TEMP/notes.md"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Published from the UI (or by a parallel tag push): attach the IPA
+            # if it is not there yet, never replace an existing asset.
+            if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "$(basename "$ASSET")"; then
+              echo "Release $TAG already has $(basename "$ASSET"); nothing to do."
+              exit 0
+            fi
+            gh release upload "$TAG" "$ASSET"
+            exit 0
+          fi
+          TARGET_FLAG="--verify-tag"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET_FLAG="--target ${GITHUB_SHA}"
+          fi
+          # shellcheck disable=SC2086
+          gh release create "$TAG" "$ASSET" $FLAGS $TARGET_FLAG \
+            --title "GoldenNugget Mobile ${VERSION} (${BUILD})$([ "$KIND" = pre-release ] && echo ' pre-release')" \
+            --notes-file "$RUNNER_TEMP/notes.md"
 
 # Manual rebuild trigger

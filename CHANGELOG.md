@@ -149,6 +149,38 @@
 
 # GoldenNugget Mobile
 
+## 9.7.11 (15) — Wireless pairing shows up as a new device
+
+- On-device wireless pairing now advertises a fresh host identity unless the pairing record on disk was produced by GoldenNugget's own pairing (tracked by its SHA-256). It used to copy whatever record was loaded, including one imported from iloader, and advertise with that host's key pair and altIRK. The device then matched the service to the host it already trusted ("iloader" under Paired Devices), never listed GoldenNugget under Other Devices, and never asked for a PIN (log showed `reusing host key pair` and `reusing stored altIRK`, then nothing after `Bonjour accepted`, reported 2026-11-11). The pairing log line now says which identity a run uses.
+- A successful GoldenNugget pairing replaces the loaded record, as before.
+- Not tested on a signed device in this build.
+
+## 9.7.10 (14) — Runs and pairing keep the app alive
+
+- Every run (apply, reset, media and the others that go through `loggedRun`) now turns off screen auto-lock until it ends, then restores the previous setting. On 9.7.9 an apply's protective backup could be cut off when auto-lock suspended the app (reported 2026-11-11).
+- Runs and on-device wireless pairing now keep the app running in the background with a silent, mixable audio session (`UIBackgroundModes: audio`, `Nugget/Core/BackgroundAudio.swift`). It starts only while a run or a pairing attempt is in progress, makes no sound, and never interrupts other audio. Pairing needs this because the PIN is typed in Settings while this app's listener answers the device: once iOS suspended the app (after roughly 30 seconds), the handshake timed out and the device never listed GoldenNugget as paired (reported 2026-11-11). A UIKit background task is still held as a fallback.
+- The app log now records when the app leaves or returns to the foreground, iOS memory warnings, and background time running out during a run. If iOS closes the app mid-run, the next launch says so in the home status line and the log.
+- Not tested on a signed device in this build.
+
+## 9.7.9 (13) — Apply summary sheet no longer opens empty
+
+- Fixed Apply opening an empty grey sheet with no Apply or Cancel button. The home page set the apply preview and the sheet flag in the same update, and `.sheet(isPresented:)` with `if let applyPreview` could render the sheet before the preview reached it. The summary now uses `.sheet(item: $applyPreview)` (`ApplyPreview` is `Identifiable`), so the sheet always receives the preview it shows. Reported on a signed device running 9.7.8; this fix is not yet device-tested.
+- Apply in the summary now starts the run from the sheet's `onDismiss`, after the sheet has fully closed, instead of during the dismissal animation. The home page's Apply button then shows "Applying…" with Stop run while it works.
+- A failed or stopped apply now keeps its reason in the home status line until the next status replaces it. Previously every result faded after 6 seconds, so a failure could vanish before it was read. Success still fades.
+
+## 9.7.8 (12) — `.batter` picker uses a real iOS document picker
+
+- Templates ("Import .batter template" and option replacement files) and Community Catalog ("Import .batter or portable preset") now open a `UIDocumentPickerViewController` (`Nugget/Views/DocumentPicker.swift`) instead of SwiftUI's `.fileImporter`. On iPhone every `TabView` tab stays alive, and the home, Tweaks, PosterBoard, Files, Presets and Passcode pages each attach their own `.fileImporter`. SwiftUI shares one importer between them, so the Templates picker could open with another page's allowed types and grey out `.batter` files even though Templates requests `.item`. 9.7.6's notes described "one iOS document picker", but that release still used `.fileImporter`.
+- The picker returns a copy (`asCopy: true`) in the app's own temporary inbox, so files from third-party File Providers that never assigned `.batter` a type import without a security-scoped bookmark.
+- Not tested on a signed device in this build.
+
+## 9.7.7 (11) — Mond `.batter` template/tweak merge fix
+
+- Audited the mobile apply path against the desktop Mond failure (a non-PosterBoard windowing `.batter` reaching PosterBoard staging after a multi-hour backup; the real package is a format-2 `ManagedPreferencesDomain` file template). Source inspection shows mobile is not affected: format-3 community packages import through `CommunityTemplate.load` into `CommunityTemplateStore`, compile into `communityPayloads` and merge into the tweak payloads. The PosterBoard database fetch and `PosterBoard.compile` only run for selected wallpapers, resets or `TemplateFile.isPosterBoard` templates. No mobile reproduction was claimed or found; not device-tested.
+- Fixed a silent overwrite: a file template payload (such as the real Mond iPhone windowing package's `ManagedPreferencesDomain/mobile/com.apple.springboard.plist`) used to be upserted over an enabled tweak's payload for the same row, discarding those tweak keys. `TweakCompiler.foldingTemplates` now merges them before `prepareRun` (template as base, tweak keys win, matching desktop). A collision that cannot be merged fails before any backup. Not compiled in this environment; not device-tested.
+- `.github/workflows/build.yml` now publishes releases: a pushed `v<version>` tag (or `v<version>-pre.<build>` for a pre-release), a release published in the GitHub UI, or a manual run with `release_tag` set attaches the IPA it just built as `GoldenNuggetMobile-<version>-build<build>.ipa`, with this CHANGELOG section as notes. It refuses to publish if the tag, `Info.plist` and built IPA disagree, if the section is missing, and never replaces an existing asset. It does not edit the FlareStore `repo.json`.
+- Added `scripts/check-community-posterboard-routing.py`, a regression check that needs no macOS toolchain. It pins those routing invariants in the Swift sources and routes every desktop `community-batters/*.batter` plus a Mond-shaped fixture to the community path. A genuine PosterBoard template still routes to PosterBoard.
+
 ## 9.7.6 (10) — `.batter` picker fix
 
 - Register the `.batter` template file type with iOS, so Files can identify GoldenNugget templates.
