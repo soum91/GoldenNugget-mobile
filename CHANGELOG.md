@@ -1,5 +1,14 @@
 # Changelog
 
+## [v9.7.10] - 2026-11-11
+
+## Verified changes since v9.7.9
+
+- Keep runs and wireless pairing alive in the background ([`fb984494`](https://github.com/soum91/GoldenNugget-mobile/commit/fb98449456c01d77df26d29423e21899973f6cb7); `Nugget/Core/BackgroundAudio.swift`, `Nugget/Core/RunKeepAlive.swift`, `Nugget/Core/WirelessPairing.swift`, and 1 more)
+- Keep the app alive for the length of a run ([`ab3969dc`](https://github.com/soum91/GoldenNugget-mobile/commit/ab3969dce92d4a42ae9586ac4b65b5af5d56d304); `Nugget/Core/GoldenNuggetEngine.swift`, `Nugget/Core/RunKeepAlive.swift`, `Nugget/Views/GoldenNuggetView.swift`, and 2 more)
+
+[Inspect exact code changes](https://github.com/soum91/GoldenNugget-mobile/compare/v9.7.9...v9.7.10)
+
 ## [v9.7.9] - 2026-11-11
 
 ## Verified changes since v9.7.8
