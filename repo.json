@@ -10,11 +10,61 @@
       "name": "GoldenNugget Mobile",
       "bundleIdentifier": "com.awesomenull.goldennugget",
       "developerName": "GoldenNugget Team",
-      "subtitle": "On-device tweaks for iOS 26 and 27 · 9.7.6",
-      "localizedDescription": "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter template import file picker by using a single document importer, supporting generic Files items, and registering the .batter document type.",
+      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.11",
+      "localizedDescription": "GoldenNugget Mobile 9.7.11 from the soum91 fork. On-device wireless pairing advertises a fresh host identity unless the loaded record came from GoldenNugget's own pairing, so it appears under Developer Mode \u2192 Other Devices instead of being mistaken for an already-paired host. Includes the 9.7.10 keep-alive, 9.7.9 apply sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes.",
       "category": "utilities",
       "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
       "versions": [
+        {
+          "version": "9.7.11",
+          "buildVersion": "15",
+          "date": "2026-11-11T21:08:45Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.11 from the soum91 fork. On-device wireless pairing advertises a fresh host identity unless the loaded record came from GoldenNugget's own pairing, so it appears under Developer Mode \u2192 Other Devices instead of being mistaken for an already-paired host. Includes the 9.7.10 keep-alive, 9.7.9 apply sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes.",
+          "changelog": "Wireless pairing uses a fresh host identity unless the record on disk was produced by GoldenNugget's own pairing (SHA-256 tracked); imported records (e.g. from iloader) made the device treat it as already paired.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.11/GoldenNuggetMobile-9.7.11-build15.ipa",
+          "size": 15584041,
+          "minOSVersion": "26.0"
+        },
+        {
+          "version": "9.7.10",
+          "buildVersion": "14",
+          "date": "2026-11-11T17:58:19Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.10 from the soum91 fork. Runs and on-device wireless pairing keep the app alive in the background (silent audio session, auto-lock paused during runs), so pairing completes while the PIN is typed in Settings and applies survive leaving the app. Includes the 9.7.9 apply-sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes.",
+          "changelog": "Runs pause screen auto-lock and, with wireless pairing, hold a silent background audio session so iOS does not suspend them; foreground changes, memory warnings and runs killed by iOS are logged and reported on next launch.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.10/GoldenNuggetMobile-9.7.10-build14.ipa",
+          "size": 15583338,
+          "minOSVersion": "26.0"
+        },
+        {
+          "version": "9.7.9",
+          "buildVersion": "13",
+          "date": "2026-11-11T04:40:58Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix.",
+          "changelog": "Apply summary uses .sheet(item:) so it never opens empty; the run starts from the sheet's onDismiss; failed or stopped applies keep their reason in the status line instead of fading after 6 seconds.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.9/GoldenNuggetMobile-9.7.9-build13.ipa",
+          "size": 15576100,
+          "minOSVersion": "26.0"
+        },
+        {
+          "version": "9.7.8",
+          "buildVersion": "12",
+          "date": "2026-11-10T21:20:15Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7).",
+          "changelog": "Templates and Community Catalog use a UIKit document picker instead of SwiftUI's shared .fileImporter, which could open with another tab's file types and grey out .batter. Picked files are copied into the app, so File Providers without a .batter type still work.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.8/GoldenNuggetMobile-9.7.8-build12.ipa",
+          "size": 15573158,
+          "minOSVersion": "26.0"
+        },
+        {
+          "version": "9.7.7",
+          "buildVersion": "11",
+          "date": "2026-11-10T20:09:39Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.7 from the soum91 fork. Template files that write the same plist as an enabled tweak (such as the Mond iPhone windowing .batter) are now merged with it before the backup instead of silently replacing the tweak keys.",
+          "changelog": "Merge template plists with enabled tweak plists for the same file before the backup (fixes Mond .batter silently wiping SpringBoard tweaks). Release IPAs now carry the build number in the file name.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.7/GoldenNuggetMobile-9.7.7-build11.ipa",
+          "size": 15570392,
+          "minOSVersion": "26.0"
+        },
         {
           "version": "9.7.6",
           "buildVersion": "10",
@@ -26,13 +76,13 @@
           "minOSVersion": "26.0"
         }
       ],
-      "version": "9.7.6",
-      "buildVersion": "10",
-      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.6/GoldenNuggetMobile.ipa",
-      "size": 15567955,
+      "version": "9.7.11",
+      "buildVersion": "15",
+      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.11/GoldenNuggetMobile-9.7.11-build15.ipa",
+      "size": 15584041,
       "minOSVersion": "26.0",
-      "versionDate": "2026-11-10T04:23:23Z",
-      "versionDescription": "GoldenNugget Mobile 9.7.6 from the soum91 fork. Fixes the .batter template import file picker by using a single document importer, supporting generic Files items, and registering the .batter document type."
+      "versionDate": "2026-11-11T21:08:45Z",
+      "versionDescription": "GoldenNugget Mobile 9.7.11 from the soum91 fork. On-device wireless pairing advertises a fresh host identity unless the loaded record came from GoldenNugget's own pairing, so it appears under Developer Mode \u2192 Other Devices instead of being mistaken for an already-paired host. Includes the 9.7.10 keep-alive, 9.7.9 apply sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes."
     }
   ]
 }
