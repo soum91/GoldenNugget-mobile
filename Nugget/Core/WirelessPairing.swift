@@ -271,6 +271,7 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
             do {
                 let record = try Data(contentsOf: URL(fileURLWithPath: paired.pairingFilePath))
                 try record.write(to: AppPaths.pairingFile, options: .atomic)
+                UserDefaults.standard.set(Self.fingerprint(record), forKey: Self.ownRecordFingerprintKey)
             } catch {
                 phase = .failed(error.localizedDescription)
                 GoldenNuggetEngine.shared.log("wireless pair: could not save record — \(error.localizedDescription)")
@@ -279,7 +280,6 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
             if !paired.hostAltIRKHex.isEmpty {
                 UserDefaults.standard.set(paired.hostAltIRKHex, forKey: Self.hostAltIRKKey)
             }
-            UserDefaults.standard.set(Self.fingerprint(record), forKey: Self.ownRecordFingerprintKey)
             phase = .paired
             generatedRecordPath = AppPaths.pairingFile.path(percentEncoded: false)
             GoldenNuggetEngine.shared.log("wireless pair: completed — \(paired.deviceName) "
