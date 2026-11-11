@@ -109,6 +109,8 @@ struct GoldenNuggetView: View {
     /// The apply used to run straight off the button; the reference routes it
     /// through a summary the user confirms, and only then opens the device.
     @State private var applyPreview: ApplyPreview?
+    /// Set by the summary sheet's Apply; consumed in its `onDismiss`.
+    @State private var applyAfterDismiss = false
     /// The pages the reset sheet has open, and whether a reset is in flight.
     ///
     /// Separate from `running`, which is the *apply* run: the two never overlap
@@ -291,13 +293,24 @@ struct GoldenNuggetView: View {
         // `.sheet(item:)`, not `.sheet(isPresented:)` + `if let`: setting the
         // preview and the flag in one pass could present the sheet with the
         // stale nil preview, an empty grey sheet with no way to apply or cancel.
-        .sheet(item: $applyPreview) { preview in
+        //
+        // The run starts from `onDismiss`, after the sheet is fully gone, so
+        // its status line, alerts and the "Applying…" button state are not
+        // swallowed by the dismissal animation.
+        .sheet(item: $applyPreview, onDismiss: {
+            guard applyAfterDismiss else { return }
+            applyAfterDismiss = false
+            runApply()
+        }) { preview in
             ApplyConfirmSheet(preview: preview,
                               onApply: {
+                                  applyAfterDismiss = true
                                   applyPreview = nil
-                                  runApply()
                               },
-                              onCancel: { applyPreview = nil })
+                              onCancel: {
+                                  applyAfterDismiss = false
+                                  applyPreview = nil
+                              })
         }
     }
 
@@ -1213,7 +1226,9 @@ struct GoldenNuggetView: View {
             await MainActor.run {
                 running = false
                 runStarted = nil
-                showStatus(text, tone)
+                // Only success fades. A failure or a stop stays on screen until
+                // the next status replaces it, so the reason is never missed.
+                showStatus(text, tone, autoHide: succeeded)
                 showRebootNotice = succeeded
                 // The reset is spent. It is deliberately not persisted, and it must not
                 // survive its own delivery either — the next run would clear the store

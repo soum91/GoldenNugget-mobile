@@ -3,6 +3,8 @@
 ## 9.7.9 (13) — Apply summary sheet no longer opens empty
 
 - Fixed Apply opening an empty grey sheet with no Apply or Cancel button. The home page set the apply preview and the sheet flag in the same update, and `.sheet(isPresented:)` with `if let applyPreview` could render the sheet before the preview reached it. The summary now uses `.sheet(item: $applyPreview)` (`ApplyPreview` is `Identifiable`), so the sheet always receives the preview it shows. Reported on a signed device running 9.7.8; this fix is not yet device-tested.
+- Apply in the summary now starts the run from the sheet's `onDismiss`, after the sheet has fully closed, instead of during the dismissal animation. The home page's Apply button then shows "Applying…" with Stop run while it works.
+- A failed or stopped apply now keeps its reason in the home status line until the next status replaces it. Previously every result faded after 6 seconds, so a failure could vanish before it was read. Success still fades.
 
 ## 9.7.8 (12) — `.batter` picker uses a real iOS document picker
 
