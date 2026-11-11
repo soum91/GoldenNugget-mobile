@@ -10,11 +10,21 @@
       "name": "GoldenNugget Mobile",
       "bundleIdentifier": "com.awesomenull.goldennugget",
       "developerName": "GoldenNugget Team",
-      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.9",
-      "localizedDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix.",
+      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.10",
+      "localizedDescription": "GoldenNugget Mobile 9.7.10 from the soum91 fork. Runs and on-device wireless pairing keep the app alive in the background (silent audio session, auto-lock paused during runs), so pairing completes while the PIN is typed in Settings and applies survive leaving the app. Includes the 9.7.9 apply-sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes.",
       "category": "utilities",
       "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
       "versions": [
+        {
+          "version": "9.7.10",
+          "buildVersion": "14",
+          "date": "2026-11-11T17:58:19Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.10 from the soum91 fork. Runs and on-device wireless pairing keep the app alive in the background (silent audio session, auto-lock paused during runs), so pairing completes while the PIN is typed in Settings and applies survive leaving the app. Includes the 9.7.9 apply-sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes.",
+          "changelog": "Runs pause screen auto-lock and, with wireless pairing, hold a silent background audio session so iOS does not suspend them; foreground changes, memory warnings and runs killed by iOS are logged and reported on next launch.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.10/GoldenNuggetMobile-9.7.10-build14.ipa",
+          "size": 15583338,
+          "minOSVersion": "26.0"
+        },
         {
           "version": "9.7.9",
           "buildVersion": "13",
@@ -56,13 +66,13 @@
           "minOSVersion": "26.0"
         }
       ],
-      "version": "9.7.9",
-      "buildVersion": "13",
-      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.9/GoldenNuggetMobile-9.7.9-build13.ipa",
-      "size": 15576100,
+      "version": "9.7.10",
+      "buildVersion": "14",
+      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.10/GoldenNuggetMobile-9.7.10-build14.ipa",
+      "size": 15583338,
       "minOSVersion": "26.0",
-      "versionDate": "2026-11-11T04:40:58Z",
-      "versionDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix."
+      "versionDate": "2026-11-11T17:58:19Z",
+      "versionDescription": "GoldenNugget Mobile 9.7.10 from the soum91 fork. Runs and on-device wireless pairing keep the app alive in the background (silent audio session, auto-lock paused during runs), so pairing completes while the PIN is typed in Settings and applies survive leaving the app. Includes the 9.7.9 apply-sheet, 9.7.8 .batter picker and 9.7.7 Mond template fixes."
     }
   ]
 }
