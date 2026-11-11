@@ -1,5 +1,14 @@
 # Changelog
 
+## [v9.7.9] - 2026-11-11
+
+## Verified changes since v9.7.8
+
+- Start apply after the summary sheet closes; keep failures on screen ([`194c98b4`](https://github.com/soum91/GoldenNugget-mobile/commit/194c98b4cb652d0d2e0e60a0675682bf96b98af6); `Nugget/Views/GoldenNuggetView.swift`)
+- Present the apply summary with sheet(item:) so it is never empty ([`d15c30cf`](https://github.com/soum91/GoldenNugget-mobile/commit/d15c30cfec9a01889b9367e462ec36a27a1eb061); `Nugget/Core/ApplyPreview.swift`, `Nugget/Views/GoldenNuggetView.swift`, `layout/Applications/GoldenNuggetMobile.app/Info.plist`, and 1 more)
+
+[Inspect exact code changes](https://github.com/soum91/GoldenNugget-mobile/compare/v9.7.8...v9.7.9)
+
 ## [v9.7.8] - 2026-11-10
 
 ## Verified changes since v9.7.7
