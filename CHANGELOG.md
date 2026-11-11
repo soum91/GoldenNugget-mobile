@@ -1,5 +1,11 @@
 # GoldenNugget Mobile
 
+## 9.7.11 (15) — Wireless pairing shows up as a new device
+
+- On-device wireless pairing now advertises a fresh host identity unless the pairing record on disk was produced by GoldenNugget's own pairing (tracked by its SHA-256). It used to copy whatever record was loaded, including one imported from iloader, and advertise with that host's key pair and altIRK. The device then matched the service to the host it already trusted ("iloader" under Paired Devices), never listed GoldenNugget under Other Devices, and never asked for a PIN (log showed `reusing host key pair` and `reusing stored altIRK`, then nothing after `Bonjour accepted`, reported 2026-11-11). The pairing log line now says which identity a run uses.
+- A successful GoldenNugget pairing replaces the loaded record, as before.
+- Not tested on a signed device in this build.
+
 ## 9.7.10 (14) — Runs and pairing keep the app alive
 
 - Every run (apply, reset, media and the others that go through `loggedRun`) now turns off screen auto-lock until it ends, then restores the previous setting. On 9.7.9 an apply's protective backup could be cut off when auto-lock suspended the app (reported 2026-11-11).
