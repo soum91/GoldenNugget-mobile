@@ -109,7 +109,6 @@ struct GoldenNuggetView: View {
     /// The apply used to run straight off the button; the reference routes it
     /// through a summary the user confirms, and only then opens the device.
     @State private var applyPreview: ApplyPreview?
-    @State private var showApplyConfirm = false
     /// The pages the reset sheet has open, and whether a reset is in flight.
     ///
     /// Separate from `running`, which is the *apply* run: the two never overlap
@@ -289,15 +288,16 @@ struct GoldenNuggetView: View {
         }
         // The pre-apply summary the reference shows before touching the device.
         // Applying from here is the only path to `runApply()`.
-        .sheet(isPresented: $showApplyConfirm) {
-            if let applyPreview {
-                ApplyConfirmSheet(preview: applyPreview,
-                                  onApply: {
-                                      showApplyConfirm = false
-                                      runApply()
-                                  },
-                                  onCancel: { showApplyConfirm = false })
-            }
+        // `.sheet(item:)`, not `.sheet(isPresented:)` + `if let`: setting the
+        // preview and the flag in one pass could present the sheet with the
+        // stale nil preview, an empty grey sheet with no way to apply or cancel.
+        .sheet(item: $applyPreview) { preview in
+            ApplyConfirmSheet(preview: preview,
+                              onApply: {
+                                  applyPreview = nil
+                                  runApply()
+                              },
+                              onCancel: { applyPreview = nil })
         }
     }
 
@@ -1154,7 +1154,6 @@ struct GoldenNuggetView: View {
                 hiddenTweakIDs: safety.hiddenTweakIDs,
                 forcedDaemonKeys: safety.forcedDaemonKeys,
                 safetyWarnings: safety.warnings(for: tweakSelection) + safety.warnings(forFeatures: features))
-            showApplyConfirm = true
         } catch {
             errorText = error.localizedDescription
         }

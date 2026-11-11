@@ -16,7 +16,13 @@ import Foundation
 /// deliberately not staged here: its database has to come off the device, and
 /// the apply itself fetches it; the view adds a descriptive "is active" line
 /// instead.
-struct ApplyPreview {
+struct ApplyPreview: Identifiable {
+    /// Lets the home page present the summary with `.sheet(item:)`, which hands
+    /// the sheet the value itself. `.sheet(isPresented:)` plus `if let` could
+    /// render the sheet before the freshly built preview reached it and show
+    /// an empty sheet with no Apply or Cancel button.
+    let id = UUID()
+
     /// One file the apply would deliver, with its size.
     struct Row: Identifiable {
         let label: String

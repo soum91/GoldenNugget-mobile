@@ -1,5 +1,9 @@
 # GoldenNugget Mobile
 
+## 9.7.9 (13) — Apply summary sheet no longer opens empty
+
+- Fixed Apply opening an empty grey sheet with no Apply or Cancel button. The home page set the apply preview and the sheet flag in the same update, and `.sheet(isPresented:)` with `if let applyPreview` could render the sheet before the preview reached it. The summary now uses `.sheet(item: $applyPreview)` (`ApplyPreview` is `Identifiable`), so the sheet always receives the preview it shows. Reported on a signed device running 9.7.8; this fix is not yet device-tested.
+
 ## 9.7.8 (12) — `.batter` picker uses a real iOS document picker
 
 - Templates ("Import .batter template" and option replacement files) and Community Catalog ("Import .batter or portable preset") now open a `UIDocumentPickerViewController` (`Nugget/Views/DocumentPicker.swift`) instead of SwiftUI's `.fileImporter`. On iPhone every `TabView` tab stays alive, and the home, Tweaks, PosterBoard, Files, Presets and Passcode pages each attach their own `.fileImporter`. SwiftUI shares one importer between them, so the Templates picker could open with another page's allowed types and grey out `.batter` files even though Templates requests `.item`. 9.7.6's notes described "one iOS document picker", but that release still used `.fileImporter`.
