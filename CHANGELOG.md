@@ -1,9 +1,9 @@
 # GoldenNugget Mobile
 
-## 9.7.10 (14) — Runs keep the app alive
+## 9.7.10 (14) — Runs and pairing keep the app alive
 
 - Every run (apply, reset, media and the others that go through `loggedRun`) now turns off screen auto-lock until it ends, then restores the previous setting. On 9.7.9 an apply's protective backup could be cut off when auto-lock suspended the app (reported 2026-11-11).
-- A run also holds a UIKit background task, so briefly switching apps gets iOS's roughly 30-second grace instead of an immediate suspension. Longer background time is not possible for this work; keep the app on screen.
+- Runs and on-device wireless pairing now keep the app running in the background with a silent, mixable audio session (`UIBackgroundModes: audio`, `Nugget/Core/BackgroundAudio.swift`). It starts only while a run or a pairing attempt is in progress, makes no sound, and never interrupts other audio. Pairing needs this because the PIN is typed in Settings while this app's listener answers the device: once iOS suspended the app (after roughly 30 seconds), the handshake timed out and the device never listed GoldenNugget as paired (reported 2026-11-11). A UIKit background task is still held as a fallback.
 - The app log now records when the app leaves or returns to the foreground, iOS memory warnings, and background time running out during a run. If iOS closes the app mid-run, the next launch says so in the home status line and the log.
 - Not tested on a signed device in this build.
 

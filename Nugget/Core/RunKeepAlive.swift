@@ -21,9 +21,8 @@ import UIKit
 ///     reports if the run never finished, so a suspension and a memory kill
 ///     can be told apart afterwards.
 ///
-/// It cannot keep a run going for long in the background: iOS gives a
-/// sideloaded app no background mode that covers this work. The app has to
-/// stay on screen.
+///   * holds `BackgroundAudio`, a silent mixable session, so leaving the app
+///     for longer than the grace window no longer suspends the run.
 enum RunKeepAlive {
     private static let markerKey = "RunKeepAlive.inFlight"
     private static var depth = 0
@@ -39,6 +38,7 @@ enum RunKeepAlive {
             let app = UIApplication.shared
             previousIdleTimer = app.isIdleTimerDisabled
             app.isIdleTimerDisabled = true
+            BackgroundAudio.acquire(label)
             backgroundTask = app.beginBackgroundTask(withName: "GoldenNugget.\(label)") {
                 AppLog.write("keep-alive: iOS background time expired during \(label); "
                     + "the run will be suspended unless the app returns to the screen")
@@ -74,6 +74,7 @@ enum RunKeepAlive {
             guard depth == 0 else { return }
             UIApplication.shared.isIdleTimerDisabled = previousIdleTimer
             endBackgroundTask()
+            BackgroundAudio.release()
             observers.forEach(NotificationCenter.default.removeObserver)
             observers = []
             UserDefaults.standard.removeObject(forKey: markerKey)

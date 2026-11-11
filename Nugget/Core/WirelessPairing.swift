@@ -89,6 +89,8 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
     /// and the app is suspended a few seconds after it goes to the background
     /// unless it holds one of these.  UIKit grants roughly 30 seconds.
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    /// Whether this object holds a `BackgroundAudio` reference.
+    private var holdingAudio = false
 
     private override init() {}
 
@@ -96,6 +98,11 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
 
     private func beginBackgroundTask() {
         endBackgroundTask()
+        // ~30 s of task time is not enough to open Settings, find the row and
+        // type the PIN; the silent session keeps the listener running until the
+        // run finishes (BackgroundAudio.swift).
+        BackgroundAudio.acquire("wireless pairing")
+        holdingAudio = true
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "GoldenNugget.WirelessPairing") { [weak self] in
             Task { @MainActor in
                 GoldenNuggetEngine.shared.log("wireless pair: background time expired before the device connected")
@@ -110,6 +117,10 @@ final class WirelessPairing: NSObject, ObservableObject, NetServiceDelegate {
     }
 
     private func endBackgroundTask() {
+        if holdingAudio {
+            holdingAudio = false
+            BackgroundAudio.release()
+        }
         guard backgroundTask != .invalid else { return }
         UIApplication.shared.endBackgroundTask(backgroundTask)
         backgroundTask = .invalid
