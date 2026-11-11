@@ -10,11 +10,21 @@
       "name": "GoldenNugget Mobile",
       "bundleIdentifier": "com.awesomenull.goldennugget",
       "developerName": "GoldenNugget Team",
-      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.8",
-      "localizedDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7).",
+      "subtitle": "On-device tweaks for iOS 26 and 27 \u00b7 9.7.9",
+      "localizedDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix.",
       "category": "utilities",
       "iconURL": "https://raw.githubusercontent.com/soum91/GoldenNugget-mobile/main/layout/Applications/GoldenNuggetMobile.app/AppIcon60x60@2x.png",
       "versions": [
+        {
+          "version": "9.7.9",
+          "buildVersion": "13",
+          "date": "2026-11-11T04:40:58Z",
+          "localizedDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix.",
+          "changelog": "Apply summary uses .sheet(item:) so it never opens empty; the run starts from the sheet's onDismiss; failed or stopped applies keep their reason in the status line instead of fading after 6 seconds.",
+          "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.9/GoldenNuggetMobile-9.7.9-build13.ipa",
+          "size": 15576100,
+          "minOSVersion": "26.0"
+        },
         {
           "version": "9.7.8",
           "buildVersion": "12",
@@ -46,13 +56,13 @@
           "minOSVersion": "26.0"
         }
       ],
-      "version": "9.7.8",
-      "buildVersion": "12",
-      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.8/GoldenNuggetMobile-9.7.8-build12.ipa",
-      "size": 15573158,
+      "version": "9.7.9",
+      "buildVersion": "13",
+      "downloadURL": "https://github.com/soum91/GoldenNugget-mobile/releases/download/v9.7.9/GoldenNuggetMobile-9.7.9-build13.ipa",
+      "size": 15576100,
       "minOSVersion": "26.0",
-      "versionDate": "2026-11-10T21:20:15Z",
-      "versionDescription": "GoldenNugget Mobile 9.7.8 from the soum91 fork. Templates and Community Catalog import through a real iOS document picker, so .batter files are no longer greyed out, and template plists merge with enabled tweaks for the same file instead of replacing them (Mond iPhone windowing fix from 9.7.7)."
+      "versionDate": "2026-11-11T04:40:58Z",
+      "versionDescription": "GoldenNugget Mobile 9.7.9 from the soum91 fork. Apply no longer opens an empty summary sheet, the apply starts after the sheet closes, and failures stay on screen. Includes the 9.7.8 .batter picker fix and the 9.7.7 Mond template merge fix."
     }
   ]
 }
