@@ -1412,5 +1412,13 @@ struct GoldenNuggetView: View {
         GoldenNuggetEngine.shared.onLog = { line in
             RunLog.shared.append(line)
         }
+        // A run that left its marker behind never reached `loggedRun`'s end:
+        // iOS suspended or killed the app mid-run. Say so where the user looks.
+        if let unfinished = RunKeepAlive.takeUnfinishedRun() {
+            let line = "⚠ The last run (\(unfinished)) never finished: iOS closed GoldenNugget "
+                + "while it was running. Keep the app on screen until a run ends."
+            GoldenNuggetEngine.shared.log(line)
+            showStatus(line, .warning, autoHide: false)
+        }
     }
 }

@@ -1,5 +1,12 @@
 # GoldenNugget Mobile
 
+## 9.7.10 (14) — Runs keep the app alive
+
+- Every run (apply, reset, media and the others that go through `loggedRun`) now turns off screen auto-lock until it ends, then restores the previous setting. On 9.7.9 an apply's protective backup could be cut off when auto-lock suspended the app (reported 2026-11-11).
+- A run also holds a UIKit background task, so briefly switching apps gets iOS's roughly 30-second grace instead of an immediate suspension. Longer background time is not possible for this work; keep the app on screen.
+- The app log now records when the app leaves or returns to the foreground, iOS memory warnings, and background time running out during a run. If iOS closes the app mid-run, the next launch says so in the home status line and the log.
+- Not tested on a signed device in this build.
+
 ## 9.7.9 (13) — Apply summary sheet no longer opens empty
 
 - Fixed Apply opening an empty grey sheet with no Apply or Cancel button. The home page set the apply preview and the sheet flag in the same update, and `.sheet(isPresented:)` with `if let applyPreview` could render the sheet before the preview reached it. The summary now uses `.sheet(item: $applyPreview)` (`ApplyPreview` is `Identifiable`), so the sheet always receives the preview it shows. Reported on a signed device running 9.7.8; this fix is not yet device-tested.

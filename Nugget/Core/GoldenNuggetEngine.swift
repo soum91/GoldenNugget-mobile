@@ -60,6 +60,10 @@ class GoldenNuggetEngine {
                               _ body: () async throws -> T) async throws -> T {
         try InFlightCall.shared.beginRun()
         defer { InFlightCall.shared.endRun() }
+        // No auto-lock, a background grace window, and a log trail if iOS
+        // suspends or memory-kills the run anyway (RunKeepAlive.swift).
+        RunKeepAlive.begin(label)
+        defer { RunKeepAlive.end() }
         do {
             return try await body()
         } catch let failure as TransportFailure where failure.isCancellation {
