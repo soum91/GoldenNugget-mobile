@@ -1,5 +1,14 @@
 # Changelog
 
+## [v9.7.11] - 2026-11-11
+
+## Verified changes since v9.7.10
+
+- Fix 9.7.11 build: save the pairing fingerprint inside its scope ([`956cc1a9`](https://github.com/soum91/GoldenNugget-mobile/commit/956cc1a947b91a473903c92522f1000a646c78c7); `Nugget/Core/WirelessPairing.swift`)
+- Pair with a fresh host identity unless the record is our own ([`910738f4`](https://github.com/soum91/GoldenNugget-mobile/commit/910738f4fbab757f0f171537e5cf06ca7f948622); `Nugget/Core/WirelessPairing.swift`, `layout/Applications/GoldenNuggetMobile.app/Info.plist`, `project.yml`)
+
+[Inspect exact code changes](https://github.com/soum91/GoldenNugget-mobile/compare/v9.7.10...v9.7.11)
+
 ## [v9.7.10] - 2026-11-11
 
 ## Verified changes since v9.7.9
